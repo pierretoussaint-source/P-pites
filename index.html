@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Calculateur de Rentabilité V2</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        :root {
+            --bg-color: #0f172a; /* Slate 900 */
+            --card-bg: #1e293b; /* Slate 800 */
+            --card-inner: #334155; /* Slate 700 */
+            --text-main: #f8fafc; /* Slate 50 */
+            --text-muted: #94a3b8; /* Slate 400 */
+            --accent: #f59e0b; /* Amber 500 */
+            --accent-hover: #d97706; /* Amber 600 */
+            --border-color: #475569; /* Slate 600 */
+            --row-green: rgba(16, 185, 129, 0.15); /* Emerald 500 transparent */
+            --row-green-text: #6ee7b7; /* Emerald 300 */
+            --danger: #ef4444;
+            --danger-hover: #dc2626;
+            --info: #3b82f6;
+            --info-hover: #2563eb;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+            font-size: 14px;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: var(--radius-lg);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        h1, h2 {
+            color: var(--accent);
+            text-align: center;
+            margin-top: 0;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+        }
+        h1 { font-size: 1.5rem; margin-bottom: 20px; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+        h2 { font-size: 1.1rem; margin-bottom: 15px; }
+
+        .card {
+            background-color: var(--card-inner);
+            padding: 16px;
+            border-radius: var(--radius-md);
+            margin-bottom: 16px;
+            border: 1px solid rgba(255,255,255,0.05);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Formulaires et Inputs */
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            font-size: 12px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        input[type="number"], input[type="text"], select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            box-sizing: border-box;
+            font-size: 14px;
+            margin-bottom: 12px;
+            transition: all 0.2s ease;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
+        }
+
+        /* Boutons */
+        button {
+            background-color: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        button:hover { 
+            background-color: var(--accent-hover); 
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.25);
+        }
+        button:active {
+            transform: translateY(0);
+        }
+
+        .btn-tiny {
+            padding: 8px 12px;
+            font-size: 12px;
+            width: 100%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        
+        .btn-blue {
+            background-color: var(--info);
+        }
+        .btn-blue:hover {
+            background-color: var(--info-hover);
+        }
+
+        .btn-delete {
+            background-color: transparent;
+            color: var(--danger);
+            padding: 6px;
+            font-size: 14px;
+            box-shadow: none;
+            border-radius: 4px;
+        }
+        .btn-delete:hover {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: var(--danger-hover);
+            box-shadow: none;
+            transform: none;
+        }
+
+        /* Layout header */
+        .header-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        @media(min-width: 600px) {
+            .header-actions {
+                flex-direction: row;
+                align-items: center;
+            }
+            .header-actions > div:last-child {
+                flex-direction: row;
+                width: auto;
+            }
+            .btn-tiny {
+                width: auto;
+            }
+        }
+        
+        .action-buttons-group {
+            display: flex; 
+            flex-direction: row; 
+            gap: 8px;
+            width: 100%;
+        }
+
+        /* Filtres */
+        .filters {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+            gap: 8px;
+        }
+        .filters select, .filters input { margin-bottom: 0; font-size: 13px; padding: 6px 8px;}
+
+        /* Tableau */
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            max-height: 60vh; /* Permet de scroller le tableau indépendamment */
+        }
+
+        table {
+            width: 100%;
+            /* Utilisation de "separate" pour éviter que les bordures des lignes ne montent sur l'entête */
+            border-collapse: separate; 
+            border-spacing: 0;
+            font-size: 13px; 
+        }
+
+        th {
+            background-color: #0f172a;
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.05em;
+            position: sticky;
+            top: 0;
+            z-index: 20; /* Très haut pour être sûr que les lignes passent en dessous */
+            height: 90px; /* On augmente la hauteur pour laisser de la place au texte en biais */
+            vertical-align: bottom;
+            padding: 0;
+            border-bottom: 2px solid var(--border-color); /* Ligne franche pour bloquer le défilement visuellement */
+        }
+
+        /* Classe pour le texte en biais */
+        .th-angled {
+            display: inline-block;
+            transform: rotate(-45deg);
+            transform-origin: bottom left;
+            margin-left: 15px;
+            margin-bottom: 10px;
+            white-space: nowrap;
+            width: 25px; /* Compresse les colonnes */
+            text-align: left;
+        }
+
+        .th-icon {
+            display: inline-block;
+            margin-bottom: 15px;
+        }
+
+        td {
+            padding: 10px 8px;
+            text-align: center;
+            border-bottom: 1px solid var(--border-color);
+            white-space: nowrap;
+        }
+
+        tbody tr {
+            transition: background-color 0.15s ease;
+        }
+        tbody tr:hover {
+            background-color: rgba(255,255,255,0.03);
+        }
+
+        td.col-name {
+            white-space: normal; 
+            text-align: left;
+            min-width: 100px;
+            font-weight: 500;
+        }
+        
+        td.col-type {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .prix-max {
+            color: #10b981; /* Emerald 500 */
+            font-weight: 700;
+        }
+
+        /* Ligne verte pour "Rentable" */
+        .row-profitable {
+            background-color: var(--row-green);
+        }
+        .row-profitable:hover {
+            background-color: rgba(16, 185, 129, 0.2);
+        }
+        .row-profitable td {
+            border-bottom: 1px solid rgba(16, 185, 129, 0.2);
+        }
+        .row-profitable .col-name {
+            color: var(--row-green-text);
+        }
+
+        /* Checkboxes personnalisées */
+        input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            margin: 0;
+            vertical-align: middle;
+            accent-color: var(--accent);
+        }
+
+        /* Pop-up (Modal) */
+        .modal {
+            display: none; 
+            position: fixed; 
+            z-index: 1000; 
+            left: 0; 
+            top: 0; 
+            width: 100%; 
+            height: 100%; 
+            background-color: rgba(15, 23, 42, 0.8); 
+            backdrop-filter: blur(4px);
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.2s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-content {
+            background-color: var(--card-bg);
+            padding: 24px;
+            border-radius: var(--radius-lg);
+            width: 90%;
+            max-width: 420px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255,255,255,0.1);
+            animation: slideUp 0.3s ease-out;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.2rem;
+            color: var(--text-main);
+        }
+
+        .close-btn {
+            background: none;
+            color: var(--text-muted);
+            font-size: 24px;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+            box-shadow: none;
+            line-height: 1;
+        }
+        .close-btn:hover {
+            color: var(--danger);
+            background: none;
+            transform: scale(1.1);
+            box-shadow: none;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 10px;
+        }
+        .form-row > div { flex: 1; }
+        
+        .submit-btn {
+            width: 100%;
+            padding: 12px;
+            font-size: 15px;
+            margin-top: 15px;
+            letter-spacing: 0.05em;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Rentabilité Pépites</h1>
+
+        <!-- Header avec prix et petit bouton -->
+        <div class="card header-actions">
+            <div style="flex: 1;">
+                <label for="nuggetPrice">💰 Prix / pépite :</label>
+                <input type="number" id="nuggetPrice" placeholder="0" step="0.01" min="0" style="margin-bottom: 0;">
+            </div>
+            <div class="action-buttons-group">
+                <button class="btn-tiny" onclick="openModal()">➕ Ajouter</button>
+                <button class="btn-tiny btn-blue" onclick="document.getElementById('csvFileInput').click()">📥 Importer CSV</button>
+                <input type="file" id="csvFileInput" accept=".csv" style="display: none;" onchange="importCSV(event)">
+            </div>
+        </div>
+
+        <!-- Filtres -->
+        <div class="card">
+            <label>🔍 Filtres :</label>
+            <div class="filters">
+                <input type="text" id="filterName" placeholder="Nom...">
+                <select id="filterType">
+                    <option value="">Toutes Cat.</option>
+                    <option value="conso">Conso</option>
+                    <option value="resco">Resco</option>
+                    <option value="equip">Equip</option>
+                    <option value="ame">Ame</option>
+                    <option value="crea">Crea</option>
+                </select>
+                <select id="filterRentable">
+                    <option value="">Rentable ? (Tous)</option>
+                    <option value="yes">Oui</option>
+                    <option value="no">Non</option>
+                </select>
+                <select id="filterVerified">
+                    <option value="">Vérifié ? (Tous)</option>
+                    <option value="yes">Oui</option>
+                    <option value="no">Non</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Tableau -->
+        <div class="card table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th><div class="th-angled">Cat.</div></th>
+                        <th><div class="th-angled">Nom</div></th>
+                        <th><div class="th-angled">Tx/1000</div></th>
+                        <th><div class="th-angled">Prix Max/u</div></th>
+                        <th title="A été rentable"><div class="th-angled">Rentable</div></th>
+                        <th title="Vérifiée"><div class="th-angled">Vérifiée</div></th>
+                        <th><div class="th-angled">Date</div></th>
+                        <th><div class="th-icon">🗑️</div></th>
+                    </tr>
+                </thead>
+                <tbody id="resourceTableBody">
+                    <!-- Généré par JS -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modale Ajout Ressource -->
+    <div id="addModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Nouvelle Ressource</h2>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <form id="resourceForm">
+                <label for="resType">Catégorie :</label>
+                <select id="resType" required>
+                    <option value="conso">Consommable (conso)</option>
+                    <option value="resco">Ressource (resco)</option>
+                    <option value="equip">Equipement (equip)</option>
+                    <option value="ame">Âme (ame)</option>
+                    <option value="crea">Créature (crea)</option>
+                </select>
+
+                <label for="resourceName">Nom :</label>
+                <input type="text" id="resourceName" placeholder="Ex: Corne" required>
+
+                <label for="resourceRate">Taux (pour 1000) :</label>
+                <input type="number" id="resourceRate" placeholder="Ex: 250" step="0.1" min="0" required>
+                
+                <button type="submit" class="submit-btn">Sauvegarder</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // --- Variables Globales ---
+        let nuggetPrice = 0;
+        let resources = [];
+
+        // Elements DOM
+        const nuggetPriceInput = document.getElementById('nuggetPrice');
+        const resourceTableBody = document.getElementById('resourceTableBody');
+        const addModal = document.getElementById('addModal');
+        const resourceForm = document.getElementById('resourceForm');
+        
+        // Elements Filtres
+        const filterName = document.getElementById('filterName');
+        const filterType = document.getElementById('filterType');
+        const filterRentable = document.getElementById('filterRentable');
+        const filterVerified = document.getElementById('filterVerified');
+
+        // --- Initialisation ---
+        function loadData() {
+            const savedPrice = localStorage.getItem('nuggetPrice');
+            if (savedPrice) {
+                nuggetPrice = parseFloat(savedPrice);
+                nuggetPriceInput.value = nuggetPrice;
+            }
+
+            const savedResources = localStorage.getItem('resources');
+            if (savedResources) {
+                resources = JSON.parse(savedResources);
+            }
+            updateTable();
+        }
+
+        // --- Sauvegarde ---
+        function saveResources() {
+            localStorage.setItem('resources', JSON.stringify(resources));
+        }
+
+        // --- Importation CSV ---
+        function importCSV(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const text = e.target.result;
+                const lines = text.split(/\r\n|\n/);
+                
+                let addedCount = 0;
+                
+                // On commence à 1 pour ignorer la première ligne d'en-tête (Rescources;Coef;Hdv)
+                for (let i = 1; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    if (!line) continue;
+                    
+                    const cols = line.split(';');
+                    if (cols.length >= 3) {
+                        // Le nom gardera ses beaux accents grâce à l'encodage de lecture ci-dessous
+                        let name = cols[0].trim();
+                        
+                        // Remplacer la virgule par un point pour les décimales
+                        let rateStr = cols[1].trim().replace(',', '.');
+                        let rate = parseFloat(rateStr);
+                        
+                        // Nettoyage de la catégorie : minuscules + suppression des accents (ex: "Âme" devient "ame")
+                        let typeRaw = cols[2].trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                        
+                        // Vérifier si la catégorie est valide, sinon on met "resco" par défaut
+                        let type = "resco"; 
+                        if (['conso', 'resco', 'equip', 'ame', 'crea'].includes(typeRaw)) {
+                            type = typeRaw;
+                        }
+
+                        if (name && !isNaN(rate)) {
+                            resources.push({
+                                id: Date.now() + i,
+                                type: type,
+                                name: name,
+                                rate: rate,
+                                isProfitable: false,
+                                lastVerifiedDate: null
+                            });
+                            addedCount++;
+                        }
+                    }
+                }
+                
+                if (addedCount > 0) {
+                    saveResources();
+                    updateTable();
+                    alert(addedCount + " ressource(s) importée(s) avec succès !");
+                } else {
+                    alert("Aucune ressource valide trouvée dans le fichier CSV. Vérifie le format.");
+                }
+                
+                // Réinitialise l'input
+                event.target.value = '';
+            };
+            
+            // LECTURE SPÉCIALE : L'encodage ISO-8859-1 gère parfaitement les accents français d'Excel !
+            reader.readAsText(file, 'ISO-8859-1');
+        }
+
+        // --- Gestion Modale ---
+        function openModal() { addModal.style.display = 'flex'; }
+        function closeModal() { addModal.style.display = 'none'; }
+        
+        // Fermer modale en cliquant en dehors
+        window.onclick = function(event) {
+            if (event.target == addModal) closeModal();
+        }
+
+        // --- Événements Formulaires & Filtres ---
+        nuggetPriceInput.addEventListener('input', (e) => {
+            nuggetPrice = parseFloat(e.target.value) || 0;
+            localStorage.setItem('nuggetPrice', nuggetPrice);
+            updateTable();
+        });
+
+        resourceForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const newRes = {
+                id: Date.now(),
+                type: document.getElementById('resType').value,
+                name: document.getElementById('resourceName').value,
+                rate: parseFloat(document.getElementById('resourceRate').value),
+                isProfitable: false,
+                lastVerifiedDate: null
+            };
+            resources.push(newRes);
+            saveResources();
+            
+            // Réinitialiser form et fermer modale
+            resourceForm.reset();
+            closeModal();
+            updateTable();
+        });
+
+        // Appliquer les filtres à chaque changement
+        [filterName, filterType, filterRentable, filterVerified].forEach(el => {
+            el.addEventListener('input', updateTable);
+            el.addEventListener('change', updateTable);
+        });
+
+        // --- Actions sur le tableau ---
+        function toggleProfitable(id) {
+            const res = resources.find(r => r.id === id);
+            if (res) {
+                res.isProfitable = !res.isProfitable;
+                saveResources();
+                updateTable();
+            }
+        }
+
+        function toggleVerified(id) {
+            const res = resources.find(r => r.id === id);
+            if (res) {
+                // Si non coché -> on coche et on met la date du jour. Sinon on efface la date.
+                if (!res.lastVerifiedDate) {
+                    const today = new Date();
+                    // Format court JJ/MM/AA
+                    res.lastVerifiedDate = today.toLocaleDateString('fr-FR', {day: '2-digit', month: '2-digit', year: '2-digit'});
+                } else {
+                    res.lastVerifiedDate = null;
+                }
+                saveResources();
+                updateTable();
+            }
+        }
+
+        function deleteResource(id) {
+            if(confirm("Supprimer cette ressource ?")) {
+                resources = resources.filter(r => r.id !== id);
+                saveResources();
+                updateTable();
+            }
+        }
+
+        // --- Affichage du Tableau ---
+        function updateTable() {
+            resourceTableBody.innerHTML = '';
+            
+            // Valeurs des filtres
+            const fName = filterName.value.toLowerCase();
+            const fType = filterType.value;
+            const fRentable = filterRentable.value;
+            const fVerified = filterVerified.value;
+
+            // Filtrage
+            const filteredResources = resources.filter(res => {
+                // Rétrocompatibilité si d'anciennes données n'ont pas les nouvelles clés
+                if(res.type === undefined) res.type = 'resco';
+                if(res.isProfitable === undefined) res.isProfitable = false;
+
+                const matchName = res.name.toLowerCase().includes(fName);
+                const matchType = fType === "" || res.type === fType;
+                const matchRentable = fRentable === "" || 
+                                     (fRentable === "yes" && res.isProfitable) || 
+                                     (fRentable === "no" && !res.isProfitable);
+                const matchVerified = fVerified === "" || 
+                                     (fVerified === "yes" && res.lastVerifiedDate) || 
+                                     (fVerified === "no" && !res.lastVerifiedDate);
+
+                return matchName && matchType && matchRentable && matchVerified;
+            });
+
+            // Rendu
+            filteredResources.forEach(res => {
+                const maxBuyPrice = (res.rate / 1000) * nuggetPrice;
+                const tr = document.createElement('tr');
+                
+                // Classe verte si rentable
+                if (res.isProfitable) tr.classList.add('row-profitable');
+
+                tr.innerHTML = `
+                    <td class="col-type">${res.type}</td>
+                    <td class="col-name"><strong>${res.name}</strong></td>
+                    <td>${res.rate}</td>
+                    <td class="prix-max">${maxBuyPrice.toFixed(0)}</td>
+                    <td>
+                        <input type="checkbox" onchange="toggleProfitable(${res.id})" ${res.isProfitable ? 'checked' : ''}>
+                    </td>
+                    <td>
+                        <input type="checkbox" onchange="toggleVerified(${res.id})" ${res.lastVerifiedDate ? 'checked' : ''}>
+                    </td>
+                    <td>${res.lastVerifiedDate ? res.lastVerifiedDate : '-'}</td>
+                    <td>
+                        <button class="btn-delete" title="Supprimer" onclick="deleteResource(${res.id})">🗑️</button>
+                    </td>
+                `;
+                resourceTableBody.appendChild(tr);
+            });
+        }
+
+        // Démarrage
+        loadData();
+    </script>
+</body>
+</html>
