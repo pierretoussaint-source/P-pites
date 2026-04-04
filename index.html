@@ -6,13 +6,13 @@
     <title>Calculateur de Rentabilité V2</title>
     
     <!-- PWA & Meta Tags pour Mobile -->
-    <link rel="manifest" href="./manifest.json">
+    <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0f172a">
     
-    <!-- Forcer la détection des icônes (sizes="any" permet d'accepter des tailles non exactes pour le navigateur) -->
-    <link rel="icon" type="image/png" sizes="any" href="./icon-192.png">
-    <link rel="icon" type="image/png" sizes="any" href="./icon-512.png">
-    <link rel="apple-touch-icon" href="./icon-192.png">
+    <!-- Forcer la détection des icônes sans le ./ qui peut causer des soucis sur Github Pages -->
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+    <link rel="apple-touch-icon" href="icon-192.png">
     
     <meta name="description" content="Calculateur de rentabilité pour vos ressources">
 
@@ -482,13 +482,39 @@
     </div>
 
     <script>
-        // --- Enregistrement du Service Worker (Pour rendre l'app installable) ---
+        // --- 1. Logique d'Installation PWA (Placée en tout premier !) ---
+        let deferredPrompt;
+        const installBtn = document.getElementById('installBtn');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Empêche l'affichage automatique du prompt par Chrome
+            e.preventDefault();
+            // Stocke l'événement pour pouvoir le déclencher plus tard
+            deferredPrompt = e;
+            // Affiche le bouton d'installation
+            installBtn.style.display = 'inline-flex';
+            console.log("✅ L'événement d'installation PWA a été capturé avec succès !");
+        });
+
+        installBtn.addEventListener('click', async () => {
+            if (deferredPrompt !== null) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    console.log('Installation acceptée');
+                }
+                deferredPrompt = null;
+                installBtn.style.display = 'none';
+            }
+        });
+
+        // --- 2. Enregistrement du Service Worker ---
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js').then(registration => {
-                    console.log('ServiceWorker enregistré avec succès !', registration.scope);
+                navigator.serviceWorker.register('sw.js').then(registration => {
+                    console.log('✅ ServiceWorker enregistré avec succès !', registration.scope);
                 }).catch(err => {
-                    console.log('Erreur lors de l\'enregistrement du ServiceWorker :', err);
+                    console.error('❌ Erreur lors de l\'enregistrement du ServiceWorker :', err);
                 });
             });
         }
@@ -709,36 +735,6 @@
                 resourceTableBody.appendChild(tr);
             });
         }
-
-        // --- Logique d'Installation PWA ---
-        let deferredPrompt;
-        const installBtn = document.getElementById('installBtn');
-
-        window.addEventListener('beforeinstallprompt', (e) => {
-            // Empêche l'affichage automatique du prompt par Chrome
-            e.preventDefault();
-            // Stocke l'événement pour pouvoir le déclencher plus tard
-            deferredPrompt = e;
-            // Affiche le bouton d'installation
-            installBtn.style.display = 'inline-flex';
-        });
-
-        installBtn.addEventListener('click', async () => {
-            if (deferredPrompt !== null) {
-                // Affiche le prompt d'installation
-                deferredPrompt.prompt();
-                // Attend que l'utilisateur réponde
-                const { outcome } = await deferredPrompt.userChoice;
-                if (outcome === 'accepted') {
-                    console.log('Installation acceptée');
-                } else {
-                    console.log('Installation refusée');
-                }
-                // Vide la variable et cache le bouton
-                deferredPrompt = null;
-                installBtn.style.display = 'none';
-            }
-        });
 
         // Démarrage
         loadData();
