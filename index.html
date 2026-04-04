@@ -38,6 +38,49 @@
             --radius-lg: 12px;
         }
 
+        /* --- Nouveau Style pour le Cadre Doré --- */
+        .header-logo-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 12px;
+            margin-top: 5px;
+        }
+
+        .golden-frame {
+            width: 76px;
+            height: 76px;
+            border-radius: 22px;
+            padding: 4px; /* L'épaisseur du cadre */
+            /* Dégradé doré premium */
+            background: linear-gradient(135deg, #fef08a 0%, #f59e0b 50%, #78350f 100%);
+            /* Ombre portée lumineuse pour l'effet "halo doré" */
+            box-shadow: 0 8px 20px -5px rgba(245, 158, 11, 0.6), 0 4px 10px rgba(0,0,0,0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        /* Petit reflet blanc sur le haut du cadre pour le côté brillant */
+        .golden-frame::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 10%; right: 10%;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            filter: blur(1px);
+        }
+
+        .app-logo-img {
+            width: 100%;
+            height: 100%;
+            border-radius: 18px; /* S'emboîte parfaitement dans le cadre */
+            object-fit: cover;
+            background-color: var(--card-bg); /* Couleur de fond si l'icône est transparente */
+        }
+        /* ---------------------------------------- */
+
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg-color);
@@ -146,6 +189,13 @@
             background-color: var(--info-hover);
         }
 
+        .btn-export {
+            background-color: #8b5cf6; /* Violet */
+        }
+        .btn-export:hover {
+            background-color: #7c3aed;
+        }
+
         .btn-delete {
             background-color: transparent;
             color: var(--danger);
@@ -175,6 +225,7 @@
             .header-actions > div:last-child {
                 flex-direction: row;
                 width: auto;
+                flex-wrap: wrap; /* Pour que les boutons passent à la ligne si besoin */
             }
             .btn-tiny {
                 width: auto;
@@ -184,6 +235,7 @@
         .action-buttons-group {
             display: flex; 
             flex-direction: row; 
+            flex-wrap: wrap; /* Assure que ça ne déborde pas sur les petits écrans */
             gap: 8px;
             width: 100%;
         }
@@ -389,6 +441,13 @@
 <body>
 
     <div class="container">
+        <!-- Ajout de l'icône dans son cadre doré -->
+        <div class="header-logo-container">
+            <div class="golden-frame">
+                <img src="icon-192.png" alt="Icône de l'application" class="app-logo-img">
+            </div>
+        </div>
+
         <h1>Rentabilité Pépites</h1>
 
         <!-- Header avec prix et petit bouton -->
@@ -400,7 +459,8 @@
             <div class="action-buttons-group">
                 <button id="installBtn" class="btn-tiny" style="display: none; background-color: #10b981;">📱 Installer</button>
                 <button class="btn-tiny" onclick="openModal()">➕ Ajouter</button>
-                <button class="btn-tiny btn-blue" onclick="document.getElementById('csvFileInput').click()">📥 Importer CSV</button>
+                <button class="btn-tiny btn-blue" onclick="document.getElementById('csvFileInput').click()">📥 Importer</button>
+                <button class="btn-tiny btn-export" onclick="exportCSV()">📤 Exporter</button>
                 <input type="file" id="csvFileInput" accept=".csv" style="display: none;" onchange="importCSV(event)">
             </div>
         </div>
@@ -553,6 +613,46 @@
         // --- Sauvegarde ---
         function saveResources() {
             localStorage.setItem('resources', JSON.stringify(resources));
+        }
+
+        // --- Exportation CSV ---
+        function exportCSV() {
+            if (resources.length === 0) {
+                alert("Vous n'avez aucune ressource à exporter !");
+                return;
+            }
+
+            // Création de l'en-tête (exactement comme le fichier importé)
+            let csvContent = "Rescources;Coef;Hdv\n";
+
+            resources.forEach(res => {
+                // Remettre la virgule pour les nombres (au lieu du point JS)
+                let rateStr = res.rate.toString().replace('.', ',');
+                
+                // Mettre la première lettre de la catégorie en majuscule (conso -> Conso)
+                let typeStr = res.type.charAt(0).toUpperCase() + res.type.slice(1);
+                
+                // Sécurité : enlever les points-virgules dans les noms s'il y en a pour ne pas casser le fichier
+                let nameStr = res.name.replace(/;/g, ',');
+
+                // Ajout de la ligne
+                csvContent += `${nameStr};${rateStr};${typeStr}\n`;
+            });
+
+            // Le "\uFEFF" au début permet de forcer Excel à lire les accents correctement (UTF-8 avec BOM)
+            const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            
+            // Création d'un lien invisible pour forcer le téléchargement
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", "mes_ressources_rentabilite.csv");
+            document.body.appendChild(link);
+            link.click(); // Simule le clic
+            
+            // Nettoyage
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
         }
 
         // --- Importation CSV ---
