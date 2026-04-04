@@ -4,6 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Calculateur de Rentabilité V2</title>
+    
+    <!-- PWA & Meta Tags pour Mobile -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0f172a">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <meta name="description" content="Calculateur de rentabilité pour vos ressources">
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
@@ -195,7 +202,6 @@
 
         table {
             width: 100%;
-            /* Utilisation de "separate" pour éviter que les bordures des lignes ne montent sur l'entête */
             border-collapse: separate; 
             border-spacing: 0;
             font-size: 13px; 
@@ -210,11 +216,11 @@
             letter-spacing: 0.05em;
             position: sticky;
             top: 0;
-            z-index: 20; /* Très haut pour être sûr que les lignes passent en dessous */
-            height: 90px; /* On augmente la hauteur pour laisser de la place au texte en biais */
+            z-index: 20;
+            height: 90px;
             vertical-align: bottom;
             padding: 0;
-            border-bottom: 2px solid var(--border-color); /* Ligne franche pour bloquer le défilement visuellement */
+            border-bottom: 2px solid var(--border-color);
         }
 
         /* Classe pour le texte en biais */
@@ -225,7 +231,7 @@
             margin-left: 15px;
             margin-bottom: 10px;
             white-space: nowrap;
-            width: 25px; /* Compresse les colonnes */
+            width: 25px;
             text-align: left;
         }
 
@@ -387,6 +393,7 @@
                 <input type="number" id="nuggetPrice" placeholder="0" step="0.01" min="0" style="margin-bottom: 0;">
             </div>
             <div class="action-buttons-group">
+                <button id="installBtn" class="btn-tiny" style="display: none; background-color: #10b981;">📱 Installer</button>
                 <button class="btn-tiny" onclick="openModal()">➕ Ajouter</button>
                 <button class="btn-tiny btn-blue" onclick="document.getElementById('csvFileInput').click()">📥 Importer CSV</button>
                 <input type="file" id="csvFileInput" accept=".csv" style="display: none;" onchange="importCSV(event)">
@@ -470,6 +477,17 @@
     </div>
 
     <script>
+        // --- Enregistrement du Service Worker (Pour rendre l'app installable) ---
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js').then(registration => {
+                    console.log('ServiceWorker enregistré avec succès !', registration.scope);
+                }).catch(err => {
+                    console.log('Erreur lors de l\'enregistrement du ServiceWorker :', err);
+                });
+            });
+        }
+
         // --- Variables Globales ---
         let nuggetPrice = 0;
         let resources = [];
@@ -518,24 +536,20 @@
                 
                 let addedCount = 0;
                 
-                // On commence à 1 pour ignorer la première ligne d'en-tête (Rescources;Coef;Hdv)
+                // On commence à 1 pour ignorer la première ligne d'en-tête
                 for (let i = 1; i < lines.length; i++) {
                     const line = lines[i].trim();
                     if (!line) continue;
                     
                     const cols = line.split(';');
                     if (cols.length >= 3) {
-                        // Le nom gardera ses beaux accents grâce à l'encodage de lecture ci-dessous
                         let name = cols[0].trim();
-                        
-                        // Remplacer la virgule par un point pour les décimales
                         let rateStr = cols[1].trim().replace(',', '.');
                         let rate = parseFloat(rateStr);
                         
-                        // Nettoyage de la catégorie : minuscules + suppression des accents (ex: "Âme" devient "ame")
+                        // Nettoyage de la catégorie
                         let typeRaw = cols[2].trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
                         
-                        // Vérifier si la catégorie est valide, sinon on met "resco" par défaut
                         let type = "resco"; 
                         if (['conso', 'resco', 'equip', 'ame', 'crea'].includes(typeRaw)) {
                             type = typeRaw;
@@ -563,11 +577,10 @@
                     alert("Aucune ressource valide trouvée dans le fichier CSV. Vérifie le format.");
                 }
                 
-                // Réinitialise l'input
                 event.target.value = '';
             };
             
-            // LECTURE SPÉCIALE : L'encodage ISO-8859-1 gère parfaitement les accents français d'Excel !
+            // LECTURE SPÉCIALE EN ISO-8859-1
             reader.readAsText(file, 'ISO-8859-1');
         }
 
@@ -575,7 +588,6 @@
         function openModal() { addModal.style.display = 'flex'; }
         function closeModal() { addModal.style.display = 'none'; }
         
-        // Fermer modale en cliquant en dehors
         window.onclick = function(event) {
             if (event.target == addModal) closeModal();
         }
@@ -600,13 +612,11 @@
             resources.push(newRes);
             saveResources();
             
-            // Réinitialiser form et fermer modale
             resourceForm.reset();
             closeModal();
             updateTable();
         });
 
-        // Appliquer les filtres à chaque changement
         [filterName, filterType, filterRentable, filterVerified].forEach(el => {
             el.addEventListener('input', updateTable);
             el.addEventListener('change', updateTable);
@@ -625,10 +635,8 @@
         function toggleVerified(id) {
             const res = resources.find(r => r.id === id);
             if (res) {
-                // Si non coché -> on coche et on met la date du jour. Sinon on efface la date.
                 if (!res.lastVerifiedDate) {
                     const today = new Date();
-                    // Format court JJ/MM/AA
                     res.lastVerifiedDate = today.toLocaleDateString('fr-FR', {day: '2-digit', month: '2-digit', year: '2-digit'});
                 } else {
                     res.lastVerifiedDate = null;
@@ -650,15 +658,12 @@
         function updateTable() {
             resourceTableBody.innerHTML = '';
             
-            // Valeurs des filtres
             const fName = filterName.value.toLowerCase();
             const fType = filterType.value;
             const fRentable = filterRentable.value;
             const fVerified = filterVerified.value;
 
-            // Filtrage
             const filteredResources = resources.filter(res => {
-                // Rétrocompatibilité si d'anciennes données n'ont pas les nouvelles clés
                 if(res.type === undefined) res.type = 'resco';
                 if(res.isProfitable === undefined) res.isProfitable = false;
 
@@ -674,12 +679,10 @@
                 return matchName && matchType && matchRentable && matchVerified;
             });
 
-            // Rendu
             filteredResources.forEach(res => {
                 const maxBuyPrice = (res.rate / 1000) * nuggetPrice;
                 const tr = document.createElement('tr');
                 
-                // Classe verte si rentable
                 if (res.isProfitable) tr.classList.add('row-profitable');
 
                 tr.innerHTML = `
@@ -701,6 +704,36 @@
                 resourceTableBody.appendChild(tr);
             });
         }
+
+        // --- Logique d'Installation PWA ---
+        let deferredPrompt;
+        const installBtn = document.getElementById('installBtn');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Empêche l'affichage automatique du prompt par Chrome
+            e.preventDefault();
+            // Stocke l'événement pour pouvoir le déclencher plus tard
+            deferredPrompt = e;
+            // Affiche le bouton d'installation
+            installBtn.style.display = 'inline-flex';
+        });
+
+        installBtn.addEventListener('click', async () => {
+            if (deferredPrompt !== null) {
+                // Affiche le prompt d'installation
+                deferredPrompt.prompt();
+                // Attend que l'utilisateur réponde
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    console.log('Installation acceptée');
+                } else {
+                    console.log('Installation refusée');
+                }
+                // Vide la variable et cache le bouton
+                deferredPrompt = null;
+                installBtn.style.display = 'none';
+            }
+        });
 
         // Démarrage
         loadData();
