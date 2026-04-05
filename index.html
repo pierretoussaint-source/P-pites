@@ -298,6 +298,12 @@
             text-align: left;
             min-width: 120px;
             font-weight: 500;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        
+        td.col-name:hover {
+            color: var(--accent);
         }
         
         td.col-type {
@@ -592,6 +598,34 @@
         const filterRentable = document.getElementById('filterRentable');
         const filterVerified = document.getElementById('filterVerified');
 
+        // --- Copie dans le presse-papier ---
+        function copyResourceName(element, id) {
+            // Retrouver le nom de la ressource via son ID (évite les bugs avec les apostrophes)
+            const res = resources.find(r => r.id === id);
+            if (!res) return;
+
+            const tempInput = document.createElement("input");
+            tempInput.value = res.name;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            
+            try {
+                document.execCommand("copy");
+                
+                // Feedback visuel temporaire très discret
+                const originalHTML = element.innerHTML;
+                element.innerHTML = `<strong style="color: var(--accent);">Copié ! ✓</strong>`;
+                setTimeout(() => {
+                    element.innerHTML = originalHTML;
+                }, 800); // Reste affiché 0.8 seconde
+                
+            } catch (err) {
+                console.error("Erreur de copie", err);
+            }
+            
+            document.body.removeChild(tempInput);
+        }
+
         // --- Initialisation ---
         function loadData() {
             const savedPrice = localStorage.getItem('nuggetPrice');
@@ -866,7 +900,7 @@
 
                 // Ligne de rendu propre avec les colonnes réorganisées
                 tr.innerHTML = `
-                    <td class="col-name"><strong>${res.name}</strong></td>
+                    <td class="col-name" title="Copier le nom" onclick="copyResourceName(this, ${res.id})"><strong>${res.name}</strong></td>
                     <td class="prix-max">${maxBuyPrice.toFixed(0)}</td>
                     <td><input type="checkbox" onchange="toggleProfitable(${res.id})" ${res.isProfitable ? 'checked' : ''}></td>
                     <td><input type="checkbox" onchange="toggleVerified(${res.id})" ${res.lastVerifiedDate ? 'checked' : ''}></td>
