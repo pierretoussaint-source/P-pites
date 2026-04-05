@@ -7,7 +7,7 @@
     
     <!-- PWA & Meta Tags pour Mobile -->
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#0f172a">
+    <meta name="theme-color" content="#050505">
     
     <!-- Forcer la détection des icônes sans le ./ qui peut causer des soucis sur Github Pages -->
     <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
@@ -23,39 +23,67 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
         :root {
-            --bg-color: #0f172a; /* Slate 900 */
-            --card-bg: #1e293b; /* Slate 800 */
-            --card-inner: #334155; /* Slate 700 */
-            --text-main: #f8fafc; /* Slate 50 */
-            --text-muted: #94a3b8; /* Slate 400 */
-            --accent: #f59e0b; /* Amber 500 */
-            --accent-hover: #d97706; /* Amber 600 */
-            --border-color: #475569; /* Slate 600 */
-            --row-green: rgba(16, 185, 129, 0.15); /* Emerald 500 transparent */
-            --row-green-text: #6ee7b7; /* Emerald 300 */
+            /* Palette sombre et dorée inspirée de l'icône */
+            --bg-color: #050505; 
+            --card-bg: #121212; 
+            --card-inner: #1e1e1e; 
+            --text-main: #f5f5f5; 
+            --text-muted: #a3a3a3; 
+            --accent: #eab308; /* Or éclatant */
+            --accent-hover: #ca8a04; /* Or sombre */
+            --border-color: #333333; 
+            --row-gold: rgba(234, 179, 8, 0.12); /* Fond or transparent pour la rentabilité */
+            --row-gold-text: #fde047; /* Or clair pour le texte rentable */
             --danger: #ef4444;
-            --danger-hover: #dc2626;
-            --info: #3b82f6;
-            --info-hover: #2563eb;
-            --radius-md: 8px;
-            --radius-lg: 12px;
+            --radius-md: 10px;
+            --radius-lg: 16px;
+
+            /* Couleurs des boutons/catégories */
+            --color-blue: #3b82f6;
+            --color-purple: #8b5cf6;
+            --color-green: #10b981;
+            --color-pink: #ec4899;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: radial-gradient(circle at top center, #1f1f1f 0%, var(--bg-color) 100%);
+            color: var(--text-main);
+            margin: 0;
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+            font-size: 14px;
+            -webkit-font-smoothing: antialiased;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background-color: var(--card-bg);
+            padding: 24px;
+            border-radius: var(--radius-lg);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255,255,255,0.05);
+            border: 1px solid var(--border-color);
+            box-sizing: border-box; /* Évite les débordements */
         }
 
         /* --- Style pour le Cadre Doré --- */
         .header-logo-container {
             display: flex;
             justify-content: center;
-            margin-bottom: 12px;
+            margin-bottom: 15px;
             margin-top: 5px;
         }
 
         .golden-frame {
-            width: 76px;
-            height: 76px;
-            border-radius: 22px;
-            padding: 4px;
-            background: linear-gradient(135deg, #fef08a 0%, #f59e0b 50%, #78350f 100%);
-            box-shadow: 0 8px 20px -5px rgba(245, 158, 11, 0.6), 0 4px 10px rgba(0,0,0,0.4);
+            width: 80px;
+            height: 80px;
+            border-radius: 20px;
+            padding: 3px;
+            background: linear-gradient(135deg, #fef08a 0%, #eab308 50%, #78350f 100%);
+            box-shadow: 0 10px 25px -5px rgba(234, 179, 8, 0.5), 0 4px 10px rgba(0,0,0,0.6);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -65,22 +93,250 @@
         .golden-frame::before {
             content: '';
             position: absolute;
-            top: 0; left: 10%; right: 10%;
+            top: 0; left: 15%; right: 15%;
             height: 2px;
-            background: rgba(255, 255, 255, 0.6);
+            background: rgba(255, 255, 255, 0.7);
             border-radius: 50%;
-            filter: blur(1px);
+            filter: blur(1.5px);
         }
 
         .app-logo-img {
             width: 100%;
             height: 100%;
-            border-radius: 18px;
+            border-radius: 17px;
             object-fit: cover;
-            background-color: var(--card-bg);
+            background-color: #000;
         }
 
-        /* Spinner de chargement OCR */
+        h1, h2 {
+            color: var(--accent);
+            text-align: center;
+            margin-top: 0;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+        h1 { font-size: 1.6rem; margin-bottom: 25px; text-shadow: 0 2px 10px rgba(234, 179, 8, 0.2); }
+        h2 { font-size: 1.1rem; margin-bottom: 15px; color: var(--text-main); }
+
+        .card {
+            background-color: var(--card-inner);
+            padding: 18px;
+            border-radius: var(--radius-md);
+            margin-bottom: 16px;
+            border: 1px solid rgba(255,255,255,0.03);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            box-sizing: border-box;
+        }
+
+        /* Formulaires et Inputs */
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            font-size: 12px;
+            color: var(--text-muted);
+            letter-spacing: 0.03em;
+        }
+
+        input[type="number"], input[type="text"], select, input[type="file"] {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: #1a1a1a;
+            color: var(--text-main);
+            box-sizing: border-box;
+            font-size: 14px;
+            margin-bottom: 14px;
+            transition: all 0.2s ease;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(234, 179, 8, 0.15);
+            background-color: #222;
+        }
+
+        /* Boutons avec variantes de couleurs */
+        button {
+            background-color: var(--accent);
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 6px rgba(234, 179, 8, 0.3);
+        }
+        button:hover { 
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+        }
+        button:active { transform: translateY(0); }
+
+        .btn-tiny {
+            padding: 10px 14px;
+            font-size: 12px;
+            width: 100%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            color: #fff; /* Pour contraster avec les nouvelles couleurs */
+        }
+        
+        .btn-gold { background-color: var(--accent); color: #000; }
+        .btn-gold:hover { background-color: #fde047; box-shadow: 0 6px 12px rgba(234, 179, 8, 0.4); }
+
+        .btn-blue { background-color: var(--color-blue); }
+        .btn-blue:hover { background-color: #60a5fa; box-shadow: 0 6px 12px rgba(59, 130, 246, 0.4); }
+
+        .btn-purple { background-color: var(--color-purple); }
+        .btn-purple:hover { background-color: #a78bfa; box-shadow: 0 6px 12px rgba(139, 92, 246, 0.4); }
+
+        .btn-green { background-color: var(--color-green); }
+        .btn-green:hover { background-color: #34d399; box-shadow: 0 6px 12px rgba(16, 185, 129, 0.4); }
+
+        /* Layout header */
+        .header-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        @media(min-width: 600px) {
+            .header-actions { flex-direction: row; align-items: center; }
+            .header-actions > div:last-child { flex-direction: row; width: auto; flex-wrap: wrap; }
+            .btn-tiny { width: auto; }
+        }
+        
+        .action-buttons-group {
+            display: flex; 
+            flex-direction: row; 
+            flex-wrap: wrap; 
+            gap: 10px;
+            width: 100%;
+        }
+
+        /* Filtres */
+        .filters {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+        }
+        .filters select, .filters input { margin-bottom: 0; font-size: 13px;}
+
+        /* --- Tableau et Joli Curseur (Scrollbar) --- */
+        .table-container {
+            width: 100%;
+            max-width: 100%;
+            overflow-x: auto;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            max-height: 55vh; 
+            background-color: #171717;
+            scrollbar-width: thin;
+            scrollbar-color: var(--accent) var(--card-inner);
+            box-sizing: border-box; /* Garde le tableau strictement dans sa zone */
+        }
+
+        .table-container::-webkit-scrollbar { width: 8px; height: 8px; }
+        .table-container::-webkit-scrollbar-track { background: var(--card-inner); border-radius: 4px; }
+        .table-container::-webkit-scrollbar-thumb {
+            background-color: var(--accent);
+            border-radius: 4px;
+            border: 2px solid var(--card-inner);
+        }
+        .table-container::-webkit-scrollbar-thumb:hover { background-color: #fde047; }
+
+        table {
+            width: 100%;
+            border-collapse: separate; 
+            border-spacing: 0;
+            font-size: 13px; 
+            min-width: 550px; 
+        }
+
+        th {
+            background-color: #111;
+            color: var(--accent);
+            font-weight: 600;
+            font-size: 12px;
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            padding: 0; /* Padding à 0 pour laisser de la place aux textes inclinés */
+            height: 90px; /* Assez haut pour le texte en biais */
+            vertical-align: bottom;
+            border-bottom: 2px solid var(--accent);
+        }
+
+        /* Texte des en-têtes incliné à -45 degrés */
+        .th-angled {
+            display: inline-block;
+            transform: rotate(-45deg);
+            transform-origin: bottom left;
+            margin-left: 15px;
+            margin-bottom: 10px;
+            white-space: nowrap;
+            width: 30px; /* Réduit drastiquement la largeur des colonnes */
+            text-align: left;
+        }
+
+        td {
+            padding: 12px 10px;
+            text-align: center;
+            border-bottom: 1px solid var(--border-color);
+            white-space: nowrap;
+        }
+
+        tbody tr { transition: background-color 0.15s ease; }
+        tbody tr:hover { background-color: rgba(255,255,255,0.04); }
+
+        td.col-name {
+            white-space: normal; 
+            text-align: left;
+            min-width: 120px;
+            font-weight: 500;
+        }
+        
+        td.col-type {
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .prix-max {
+            color: var(--accent);
+            font-weight: 700;
+        }
+
+        /* Ligne de rentabilité (Fond doré léger) */
+        .row-profitable {
+            background-color: var(--row-gold);
+        }
+        .row-profitable:hover {
+            background-color: rgba(234, 179, 8, 0.18);
+        }
+        .row-profitable td {
+            border-bottom: 1px solid rgba(234, 179, 8, 0.2);
+        }
+        .row-profitable .col-name {
+            color: var(--row-gold-text);
+        }
+
+        /* Checkboxes dorées */
+        input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            margin: 0;
+            vertical-align: middle;
+            accent-color: var(--accent);
+        }
+
+        /* Spinner OCR */
         .spinner {
             border: 6px solid rgba(255, 255, 255, 0.1);
             border-radius: 50%;
@@ -92,313 +348,31 @@
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            margin: 0;
-            padding: 15px;
-            display: flex;
-            justify-content: center;
-            font-size: 14px;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 900px;
-            background-color: var(--card-bg);
-            padding: 20px;
-            border-radius: var(--radius-lg);
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(255,255,255,0.05);
-        }
-
-        h1, h2 {
-            color: var(--accent);
-            text-align: center;
-            margin-top: 0;
-            font-weight: 700;
-            letter-spacing: -0.025em;
-        }
-        h1 { font-size: 1.5rem; margin-bottom: 20px; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
-        h2 { font-size: 1.1rem; margin-bottom: 15px; }
-
-        .card {
-            background-color: var(--card-inner);
-            padding: 16px;
-            border-radius: var(--radius-md);
-            margin-bottom: 16px;
-            border: 1px solid rgba(255,255,255,0.05);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
-
-        /* Formulaires et Inputs */
-        label {
-            display: block;
-            margin-bottom: 6px;
-            font-weight: 600;
-            font-size: 12px;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        input[type="number"], input[type="text"], select, input[type="file"] {
-            width: 100%;
-            padding: 8px 12px;
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-md);
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            box-sizing: border-box;
-            font-size: 14px;
-            margin-bottom: 12px;
-            transition: all 0.2s ease;
-        }
-
-        input:focus, select:focus {
-            outline: none;
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
-        }
-
-        /* Boutons */
-        button {
-            background-color: var(--accent);
-            color: #fff;
-            border: none;
-            border-radius: var(--radius-md);
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.2s ease;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-        button:hover { 
-            background-color: var(--accent-hover); 
-            transform: translateY(-1px);
-            box-shadow: 0 4px 6px rgba(0,0,0,0.25);
-        }
-        button:active {
-            transform: translateY(0);
-        }
-
-        .btn-tiny {
-            padding: 8px 12px;
-            font-size: 12px;
-            width: 100%;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-        }
-        
-        .btn-blue {
-            background-color: var(--info);
-        }
-        .btn-blue:hover {
-            background-color: var(--info-hover);
-        }
-
-        .btn-export {
-            background-color: #8b5cf6; /* Violet */
-        }
-        .btn-export:hover {
-            background-color: #7c3aed;
-        }
-
-        .btn-delete {
-            background-color: transparent;
-            color: var(--danger);
-            padding: 6px;
-            font-size: 14px;
-            box-shadow: none;
-            border-radius: 4px;
-        }
-        .btn-delete:hover {
-            background-color: rgba(239, 68, 68, 0.1);
-            color: var(--danger-hover);
-            box-shadow: none;
-            transform: none;
-        }
-
-        /* Layout header */
-        .header-actions {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        @media(min-width: 600px) {
-            .header-actions {
-                flex-direction: row;
-                align-items: center;
-            }
-            .header-actions > div:last-child {
-                flex-direction: row;
-                width: auto;
-                flex-wrap: wrap; 
-            }
-            .btn-tiny {
-                width: auto;
-            }
-        }
-        
-        .action-buttons-group {
-            display: flex; 
-            flex-direction: row; 
-            flex-wrap: wrap; 
-            gap: 8px;
-            width: 100%;
-        }
-
-        /* Filtres */
-        .filters {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
-            gap: 8px;
-        }
-        .filters select, .filters input { margin-bottom: 0; font-size: 13px; padding: 6px 8px;}
-
-        /* Tableau */
-        .table-container {
-            width: 100%;
-            overflow-x: auto;
-            border-radius: var(--radius-md);
-            border: 1px solid var(--border-color);
-            max-height: 60vh; 
-        }
-
-        table {
-            width: 100%;
-            border-collapse: separate; 
-            border-spacing: 0;
-            font-size: 13px; 
-        }
-
-        th {
-            background-color: #0f172a;
-            color: var(--text-muted);
-            font-weight: 600;
-            text-transform: uppercase;
-            font-size: 11px;
-            letter-spacing: 0.05em;
-            position: sticky;
-            top: 0;
-            z-index: 20;
-            height: 90px;
-            vertical-align: bottom;
-            padding: 0;
-            border-bottom: 2px solid var(--border-color);
-        }
-
-        /* Classe pour le texte en biais */
-        .th-angled {
-            display: inline-block;
-            transform: rotate(-45deg);
-            transform-origin: bottom left;
-            margin-left: 15px;
-            margin-bottom: 10px;
-            white-space: nowrap;
-            width: 25px;
-            text-align: left;
-        }
-
-        .th-icon {
-            display: inline-block;
-            margin-bottom: 15px;
-        }
-
-        td {
-            padding: 10px 8px;
-            text-align: center;
-            border-bottom: 1px solid var(--border-color);
-            white-space: nowrap;
-        }
-
-        tbody tr {
-            transition: background-color 0.15s ease;
-        }
-        tbody tr:hover {
-            background-color: rgba(255,255,255,0.03);
-        }
-
-        td.col-name {
-            white-space: normal; 
-            text-align: left;
-            min-width: 100px;
-            font-weight: 500;
-        }
-        
-        td.col-type {
-            font-size: 11px;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        .prix-max {
-            color: #10b981; /* Emerald 500 */
-            font-weight: 700;
-        }
-
-        /* Ligne verte pour "Rentable" */
-        .row-profitable {
-            background-color: var(--row-green);
-        }
-        .row-profitable:hover {
-            background-color: rgba(16, 185, 129, 0.2);
-        }
-        .row-profitable td {
-            border-bottom: 1px solid rgba(16, 185, 129, 0.2);
-        }
-        .row-profitable .col-name {
-            color: var(--row-green-text);
-        }
-
-        /* Checkboxes personnalisées */
-        input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-            margin: 0;
-            vertical-align: middle;
-            accent-color: var(--accent);
-        }
-
-        /* Pop-up (Modal) */
+        /* Modales */
         .modal {
             display: none; 
             position: fixed; 
             z-index: 1000; 
-            left: 0; 
-            top: 0; 
-            width: 100%; 
-            height: 100%; 
-            background-color: rgba(15, 23, 42, 0.8); 
-            backdrop-filter: blur(4px);
+            left: 0; top: 0; 
+            width: 100%; height: 100%; 
+            background-color: rgba(0, 0, 0, 0.85); 
+            backdrop-filter: blur(5px);
             justify-content: center;
             align-items: center;
             animation: fadeIn 0.2s ease-out;
         }
         
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        @keyframes slideUp {
-            from { transform: translateY(20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
         .modal-content {
             background-color: var(--card-bg);
-            padding: 24px;
+            padding: 26px;
             border-radius: var(--radius-lg);
             width: 90%;
             max-width: 420px;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
-            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
+            border: 1px solid var(--border-color);
             animation: slideUp 0.3s ease-out;
         }
 
@@ -407,66 +381,58 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
-            padding-bottom: 10px;
+            padding-bottom: 12px;
             border-bottom: 1px solid var(--border-color);
         }
         
-        .modal-header h2 {
-            margin: 0;
-            font-size: 1.2rem;
-            color: var(--text-main);
-        }
+        .modal-header h2 { margin: 0; font-size: 1.2rem; color: var(--accent); }
 
         .close-btn {
             background: none;
             color: var(--text-muted);
-            font-size: 24px;
+            font-size: 26px;
             border: none;
             cursor: pointer;
-            padding: 4px;
+            padding: 0;
             box-shadow: none;
             line-height: 1;
         }
-        .close-btn:hover {
-            color: var(--danger);
-            background: none;
-            transform: scale(1.1);
-            box-shadow: none;
-        }
+        .close-btn:hover { color: #fff; background: none; transform: scale(1.1); box-shadow: none; }
 
         .submit-btn {
             width: 100%;
             padding: 12px;
             font-size: 15px;
-            margin-top: 15px;
-            letter-spacing: 0.05em;
+            margin-top: 20px;
+            background-color: var(--accent);
+            color: #000;
         }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <!-- Ajout de l'icône dans son cadre doré -->
+        <!-- Icône dans son cadre doré -->
         <div class="header-logo-container">
             <div class="golden-frame">
-                <img src="icon-192.png" alt="Icône de l'application" class="app-logo-img">
+                <img src="icon-192.png" alt="Icône" class="app-logo-img">
             </div>
         </div>
 
         <h1>Rentabilité Pépites</h1>
 
-        <!-- Header avec prix et petit bouton -->
+        <!-- Header avec prix et boutons d'action stylisés -->
         <div class="card header-actions">
             <div style="flex: 1;">
                 <label for="nuggetPrice">💰 Prix / pépite :</label>
                 <input type="number" id="nuggetPrice" placeholder="0" step="0.01" min="0" style="margin-bottom: 0;">
             </div>
             <div class="action-buttons-group">
-                <button id="installBtn" class="btn-tiny" style="display: none; background-color: #10b981;">📱 Installer</button>
-                <button class="btn-tiny" onclick="openModal()">➕ Ajouter</button>
-                <button class="btn-tiny btn-blue" onclick="openImageModal()">📸 Image (OCR)</button>
-                <button class="btn-tiny btn-blue" onclick="document.getElementById('csvFileInput').click()">📥 Importer CSV</button>
-                <button class="btn-tiny btn-export" onclick="exportCSV()">📤 Exporter CSV</button>
+                <button id="installBtn" class="btn-tiny btn-green" style="display: none;">📱 Installer</button>
+                <button class="btn-tiny btn-gold" onclick="openModal()">➕ Ajouter</button>
+                <button class="btn-tiny btn-blue" onclick="openImageModal()">📸 Image</button>
+                <button class="btn-tiny btn-purple" onclick="document.getElementById('csvFileInput').click()">📥 Import CSV</button>
+                <button class="btn-tiny btn-green" onclick="exportCSV()">📤 Export CSV</button>
                 <input type="file" id="csvFileInput" accept=".csv" style="display: none;" onchange="importCSV(event)">
             </div>
         </div>
@@ -475,7 +441,7 @@
         <div class="card">
             <label>🔍 Filtres :</label>
             <div class="filters">
-                <input type="text" id="filterName" placeholder="Nom...">
+                <input type="text" id="filterName" placeholder="Rechercher...">
                 <select id="filterType">
                     <option value="">Toutes Cat.</option>
                     <option value="conso">Conso</option>
@@ -485,31 +451,31 @@
                     <option value="crea">Crea</option>
                 </select>
                 <select id="filterRentable">
-                    <option value="">Rentable ? (Tous)</option>
+                    <option value="">Rentable ?</option>
                     <option value="yes">Oui</option>
                     <option value="no">Non</option>
                 </select>
                 <select id="filterVerified">
-                    <option value="">Vérifié ? (Tous)</option>
+                    <option value="">Vérifié ?</option>
                     <option value="yes">Oui</option>
                     <option value="no">Non</option>
                 </select>
             </div>
         </div>
 
-        <!-- Tableau -->
+        <!-- Tableau avec le joli Scrollbar et Titres inclinés -->
         <div class="card table-container">
             <table>
                 <thead>
                     <tr>
-                        <th><div class="th-angled">Cat.</div></th>
-                        <th><div class="th-angled">Nom</div></th>
+                        <th><div class="th-angled">Catégorie</div></th>
+                        <!-- On donne un peu plus de place en largeur d'ancrage pour le nom -->
+                        <th><div class="th-angled" style="width: 80px;">Nom</div></th>
                         <th><div class="th-angled">Tx/1000</div></th>
-                        <th><div class="th-angled">Prix Max/u</div></th>
+                        <th><div class="th-angled">Max/u</div></th>
                         <th title="A été rentable"><div class="th-angled">Rentable</div></th>
-                        <th title="Vérifiée"><div class="th-angled">Vérifiée</div></th>
+                        <th title="Vérifiée"><div class="th-angled">Vérifié</div></th>
                         <th><div class="th-angled">Date</div></th>
-                        <th><div class="th-icon">🗑️</div></th>
                     </tr>
                 </thead>
                 <tbody id="resourceTableBody">
@@ -542,7 +508,7 @@
                 <label for="resourceRate">Taux (pour 1000) :</label>
                 <input type="number" id="resourceRate" placeholder="Ex: 250" step="0.1" min="0" required>
                 
-                <button type="submit" class="submit-btn">Sauvegarder</button>
+                <button type="submit" class="submit-btn btn-gold">Sauvegarder</button>
             </form>
         </div>
     </div>
@@ -551,12 +517,12 @@
     <div id="imageModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Importer une Image</h2>
+                <h2>Importer via Image</h2>
                 <button class="close-btn" onclick="closeImageModal()">&times;</button>
             </div>
-            <p style="font-size: 12px; color: var(--text-muted); margin-top: 0;">L'image doit contenir des lignes avec un Nom et un Taux/1 (ex: "Corne 0.25").</p>
+            <p style="font-size: 13px; color: var(--text-muted); margin-top: 0; line-height: 1.4;">L'image doit contenir des lignes claires avec un Nom et un Taux/1 (ex: "Corne 0.25").</p>
             <form id="imageForm" onsubmit="processImageSubmit(event)">
-                <label for="imgResType">1. Choisir la catégorie par défaut :</label>
+                <label for="imgResType">1. Catégorie par défaut :</label>
                 <select id="imgResType" required>
                     <option value="conso">Consommable (conso)</option>
                     <option value="resco">Ressource (resco)</option>
@@ -576,8 +542,8 @@
     <!-- Overlay de Chargement OCR -->
     <div id="ocrOverlay" class="modal" style="z-index: 2000; flex-direction: column; color: white;">
         <div class="spinner"></div>
-        <h3 id="ocrStatus" style="margin: 0; color: var(--accent);">Préparation du moteur IA...</h3>
-        <p style="font-size: 12px; opacity: 0.8; text-align: center; max-width: 300px;">
+        <h3 id="ocrStatus" style="margin: 0; color: var(--accent);">Préparation de l'IA...</h3>
+        <p style="font-size: 13px; opacity: 0.8; text-align: center; max-width: 320px; margin-top: 15px; line-height: 1.5;">
             Le premier lancement télécharge le dictionnaire français. Cela prend quelques secondes.
         </p>
     </div>
@@ -657,7 +623,6 @@
             const file = fileInput.files[0];
             if (!file) return;
 
-            // Fermer la modale et afficher l'overlay de chargement
             closeImageModal();
             const overlay = document.getElementById('ocrOverlay');
             const statusText = document.getElementById('ocrStatus');
@@ -665,7 +630,6 @@
             statusText.innerText = "Chargement de l'IA...";
 
             try {
-                // Création du Worker Tesseract (Français)
                 const worker = await Tesseract.createWorker('fra', 1, {
                     logger: m => {
                         if(m.status === 'recognizing text') {
@@ -674,24 +638,21 @@
                     }
                 });
 
-                // Extraction du texte
                 const ret = await worker.recognize(file);
                 const text = ret.data.text;
                 await worker.terminate();
 
-                // Analyser et enregistrer le texte
                 parseOCRText(text, category);
 
             } catch (err) {
-                alert("Erreur lors de l'analyse de l'image. Assurez-vous d'avoir une connexion internet.");
+                alert("Erreur lors de l'analyse. Vérifiez votre connexion.");
                 console.error(err);
             } finally {
                 overlay.style.display = 'none';
-                fileInput.value = ''; // Réinitialiser l'input file
+                fileInput.value = ''; 
             }
         }
 
-        // Fonction pour lire le texte extrait et trouver les doublons
         function parseOCRText(text, category) {
             const lines = text.split('\n');
             let addedCount = 0;
@@ -704,15 +665,11 @@
                 let name = "";
                 let rate1 = NaN;
 
-                // On cherche une ligne du type "Nom de la ressource 0.25" ou "Nom 0,25"
-                // Match: [Tout le texte] suivi de [Espaces] suivi de [Chiffre avec virgule/point] à la fin de la ligne
                 let match = line.match(/^(.*?)\s+([0-9]+[.,]?[0-9]*)$/);
-                
                 if (match) {
                     name = match[1].trim();
                     rate1 = parseFloat(match[2].replace(',', '.'));
                 } else {
-                    // Si c'est à l'envers : "0.25 Nom de la ressource"
                     match = line.match(/^([0-9]+[.,]?[0-9]*)\s+(.*?)$/);
                     if (match) {
                         rate1 = parseFloat(match[1].replace(',', '.'));
@@ -720,22 +677,17 @@
                     }
                 }
 
-                // Si on a bien trouvé un nom valide et un chiffre
                 if (name && !isNaN(rate1)) {
-                    let rate1000 = rate1 * 1000; // Conversion automatique Taux/1 en Taux/1000
-                    
-                    // GESTION DES DOUBLONS : On cherche si ce nom existe déjà (en ignorant les majuscules/minuscules)
+                    let rate1000 = rate1 * 1000; 
                     const existingIndex = resources.findIndex(r => r.name.toLowerCase() === name.toLowerCase());
                     
                     if (existingIndex !== -1) {
-                        // Mise à jour de l'existant
                         resources[existingIndex].rate = rate1000;
-                        resources[existingIndex].type = category; // Met à jour la catégorie si changée
+                        resources[existingIndex].type = category; 
                         updatedCount++;
                     } else {
-                        // Création d'un nouveau
                         resources.push({
-                            id: Date.now() + Math.random(), // + random pour éviter les conflits d'id si rapide
+                            id: Date.now() + Math.random(), 
                             type: category,
                             name: name,
                             rate: rate1000,
@@ -750,9 +702,9 @@
             if (addedCount > 0 || updatedCount > 0) {
                 saveResources();
                 updateTable();
-                alert(`Lecture terminée !\n\n✔️ ${addedCount} ressource(s) ajoutée(s)\n🔄 ${updatedCount} ressource(s) mise(s) à jour (doublons reconnus)`);
+                alert(`Lecture terminée !\n\n✔️ ${addedCount} ajout(s)\n🔄 ${updatedCount} mise(s) à jour`);
             } else {
-                alert("L'IA n'a reconnu aucune donnée valide.\nL'image doit être nette et les lignes doivent ressembler à : 'Nom de ressource 0.25'");
+                alert("Aucune donnée valide reconnue. Assurez-vous que l'image contient 'Nom 0.25'.");
             }
         }
 
@@ -770,7 +722,7 @@
             const url = URL.createObjectURL(blob);
             const link = document.createElement("a");
             link.setAttribute("href", url);
-            link.setAttribute("download", "mes_ressources_rentabilite.csv");
+            link.setAttribute("download", "mes_ressources.csv");
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -798,7 +750,6 @@
                         let type = ['conso', 'resco', 'equip', 'ame', 'crea'].includes(typeRaw) ? typeRaw : "resco";
 
                         if (name && !isNaN(rate)) {
-                            // GESTION DOUBLONS IMPORT CSV EGALEMENT
                             const existingIndex = resources.findIndex(r => r.name.toLowerCase() === name.toLowerCase());
                             if (existingIndex !== -1) {
                                 resources[existingIndex].rate = rate;
@@ -820,7 +771,7 @@
                 }
                 if (addedCount > 0 || updatedCount > 0) {
                     saveResources(); updateTable();
-                    alert(`Import CSV terminé !\n✔️ ${addedCount} ajoutée(s)\n🔄 ${updatedCount} mise(s) à jour`);
+                    alert(`Import CSV !\n✔️ ${addedCount} ajout(s)\n🔄 ${updatedCount} mise(s) à jour`);
                 } else { alert("Aucune ressource valide trouvée."); }
                 event.target.value = '';
             };
@@ -840,10 +791,9 @@
             const rate = parseFloat(document.getElementById('resourceRate').value);
             const category = document.getElementById('resType').value;
             
-            // GESTION DOUBLON AJOUT MANUEL
             const existingIndex = resources.findIndex(r => r.name.toLowerCase() === name.toLowerCase());
             if (existingIndex !== -1) {
-                if(confirm("Cette ressource existe déjà ! Voulez-vous mettre à jour son taux ?")) {
+                if(confirm("Cette ressource existe déjà ! Mettre à jour son taux ?")) {
                     resources[existingIndex].rate = rate;
                     resources[existingIndex].type = category;
                 } else { return; }
@@ -881,14 +831,7 @@
             }
         }
 
-        function deleteResource(id) {
-            if(confirm("Supprimer cette ressource ?")) {
-                resources = resources.filter(r => r.id !== id);
-                saveResources(); updateTable();
-            }
-        }
-
-        // --- Affichage du Tableau ---
+        // --- Affichage du Tableau avec Couleurs ---
         function updateTable() {
             resourceTableBody.innerHTML = '';
             const fName = filterName.value.toLowerCase();
@@ -913,15 +856,23 @@
                 const tr = document.createElement('tr');
                 if (res.isProfitable) tr.classList.add('row-profitable');
 
+                // Attribution des couleurs selon la catégorie
+                let typeColor = "#a3a3a3"; // gris par défaut
+                if (res.type === 'conso') typeColor = "var(--color-blue)";
+                else if (res.type === 'resco') typeColor = "var(--color-green)";
+                else if (res.type === 'equip') typeColor = "var(--accent)"; // Or
+                else if (res.type === 'ame') typeColor = "var(--color-purple)";
+                else if (res.type === 'crea') typeColor = "var(--color-pink)";
+
+                // Ligne de rendu propre (POUBELLE TOTALEMENT SUPPRIMÉE)
                 tr.innerHTML = `
-                    <td class="col-type">${res.type}</td>
+                    <td class="col-type" style="color: ${typeColor};">${res.type}</td>
                     <td class="col-name"><strong>${res.name}</strong></td>
                     <td>${res.rate}</td>
                     <td class="prix-max">${maxBuyPrice.toFixed(0)}</td>
                     <td><input type="checkbox" onchange="toggleProfitable(${res.id})" ${res.isProfitable ? 'checked' : ''}></td>
                     <td><input type="checkbox" onchange="toggleVerified(${res.id})" ${res.lastVerifiedDate ? 'checked' : ''}></td>
                     <td>${res.lastVerifiedDate ? res.lastVerifiedDate : '-'}</td>
-                    <td><button class="btn-delete" title="Supprimer" onclick="deleteResource(${res.id})">🗑️</button></td>
                 `;
                 resourceTableBody.appendChild(tr);
             });
