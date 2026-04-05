@@ -16,6 +16,9 @@
     
     <meta name="description" content="Calculateur de rentabilité pour vos ressources">
 
+    <!-- Bibliothèque OCR pour lire les images -->
+    <script src="https://unpkg.com/tesseract.js@v5.0.1/dist/tesseract.min.js"></script>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
@@ -38,7 +41,7 @@
             --radius-lg: 12px;
         }
 
-        /* --- Nouveau Style pour le Cadre Doré --- */
+        /* --- Style pour le Cadre Doré --- */
         .header-logo-container {
             display: flex;
             justify-content: center;
@@ -50,10 +53,8 @@
             width: 76px;
             height: 76px;
             border-radius: 22px;
-            padding: 4px; /* L'épaisseur du cadre */
-            /* Dégradé doré premium */
+            padding: 4px;
             background: linear-gradient(135deg, #fef08a 0%, #f59e0b 50%, #78350f 100%);
-            /* Ombre portée lumineuse pour l'effet "halo doré" */
             box-shadow: 0 8px 20px -5px rgba(245, 158, 11, 0.6), 0 4px 10px rgba(0,0,0,0.4);
             display: flex;
             align-items: center;
@@ -61,7 +62,6 @@
             position: relative;
         }
 
-        /* Petit reflet blanc sur le haut du cadre pour le côté brillant */
         .golden-frame::before {
             content: '';
             position: absolute;
@@ -75,11 +75,22 @@
         .app-logo-img {
             width: 100%;
             height: 100%;
-            border-radius: 18px; /* S'emboîte parfaitement dans le cadre */
+            border-radius: 18px;
             object-fit: cover;
-            background-color: var(--card-bg); /* Couleur de fond si l'icône est transparente */
+            background-color: var(--card-bg);
         }
-        /* ---------------------------------------- */
+
+        /* Spinner de chargement OCR */
+        .spinner {
+            border: 6px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top: 6px solid var(--accent);
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -133,7 +144,7 @@
             letter-spacing: 0.05em;
         }
 
-        input[type="number"], input[type="text"], select {
+        input[type="number"], input[type="text"], select, input[type="file"] {
             width: 100%;
             padding: 8px 12px;
             border: 1px solid var(--border-color);
@@ -225,7 +236,7 @@
             .header-actions > div:last-child {
                 flex-direction: row;
                 width: auto;
-                flex-wrap: wrap; /* Pour que les boutons passent à la ligne si besoin */
+                flex-wrap: wrap; 
             }
             .btn-tiny {
                 width: auto;
@@ -235,7 +246,7 @@
         .action-buttons-group {
             display: flex; 
             flex-direction: row; 
-            flex-wrap: wrap; /* Assure que ça ne déborde pas sur les petits écrans */
+            flex-wrap: wrap; 
             gap: 8px;
             width: 100%;
         }
@@ -254,7 +265,7 @@
             overflow-x: auto;
             border-radius: var(--radius-md);
             border: 1px solid var(--border-color);
-            max-height: 60vh; /* Permet de scroller le tableau indépendamment */
+            max-height: 60vh; 
         }
 
         table {
@@ -423,12 +434,6 @@
             box-shadow: none;
         }
 
-        .form-row {
-            display: flex;
-            gap: 10px;
-        }
-        .form-row > div { flex: 1; }
-        
         .submit-btn {
             width: 100%;
             padding: 12px;
@@ -459,8 +464,9 @@
             <div class="action-buttons-group">
                 <button id="installBtn" class="btn-tiny" style="display: none; background-color: #10b981;">📱 Installer</button>
                 <button class="btn-tiny" onclick="openModal()">➕ Ajouter</button>
-                <button class="btn-tiny btn-blue" onclick="document.getElementById('csvFileInput').click()">📥 Importer</button>
-                <button class="btn-tiny btn-export" onclick="exportCSV()">📤 Exporter</button>
+                <button class="btn-tiny btn-blue" onclick="openImageModal()">📸 Image (OCR)</button>
+                <button class="btn-tiny btn-blue" onclick="document.getElementById('csvFileInput').click()">📥 Importer CSV</button>
+                <button class="btn-tiny btn-export" onclick="exportCSV()">📤 Exporter CSV</button>
                 <input type="file" id="csvFileInput" accept=".csv" style="display: none;" onchange="importCSV(event)">
             </div>
         </div>
@@ -513,7 +519,7 @@
         </div>
     </div>
 
-    <!-- Modale Ajout Ressource -->
+    <!-- Modale Ajout Ressource Manuelle -->
     <div id="addModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -541,41 +547,65 @@
         </div>
     </div>
 
+    <!-- Modale Ajout OCR (Image) -->
+    <div id="imageModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Importer une Image</h2>
+                <button class="close-btn" onclick="closeImageModal()">&times;</button>
+            </div>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 0;">L'image doit contenir des lignes avec un Nom et un Taux/1 (ex: "Corne 0.25").</p>
+            <form id="imageForm" onsubmit="processImageSubmit(event)">
+                <label for="imgResType">1. Choisir la catégorie par défaut :</label>
+                <select id="imgResType" required>
+                    <option value="conso">Consommable (conso)</option>
+                    <option value="resco">Ressource (resco)</option>
+                    <option value="equip">Equipement (equip)</option>
+                    <option value="ame">Âme (ame)</option>
+                    <option value="crea">Créature (crea)</option>
+                </select>
+
+                <label for="imageFileInput">2. Sélectionner l'image :</label>
+                <input type="file" id="imageFileInput" accept="image/*" required>
+                
+                <button type="submit" class="submit-btn btn-blue">🔍 Analyser l'image</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Overlay de Chargement OCR -->
+    <div id="ocrOverlay" class="modal" style="z-index: 2000; flex-direction: column; color: white;">
+        <div class="spinner"></div>
+        <h3 id="ocrStatus" style="margin: 0; color: var(--accent);">Préparation du moteur IA...</h3>
+        <p style="font-size: 12px; opacity: 0.8; text-align: center; max-width: 300px;">
+            Le premier lancement télécharge le dictionnaire français. Cela prend quelques secondes.
+        </p>
+    </div>
+
     <script>
-        // --- 1. Logique d'Installation PWA (Placée en tout premier !) ---
+        // --- 1. Logique d'Installation PWA ---
         let deferredPrompt;
         const installBtn = document.getElementById('installBtn');
 
         window.addEventListener('beforeinstallprompt', (e) => {
-            // Empêche l'affichage automatique du prompt par Chrome
             e.preventDefault();
-            // Stocke l'événement pour pouvoir le déclencher plus tard
             deferredPrompt = e;
-            // Affiche le bouton d'installation
             installBtn.style.display = 'inline-flex';
-            console.log("✅ L'événement d'installation PWA a été capturé avec succès !");
+            console.log("✅ Événement d'installation PWA capturé !");
         });
 
         installBtn.addEventListener('click', async () => {
             if (deferredPrompt !== null) {
                 deferredPrompt.prompt();
                 const { outcome } = await deferredPrompt.userChoice;
-                if (outcome === 'accepted') {
-                    console.log('Installation acceptée');
-                }
                 deferredPrompt = null;
                 installBtn.style.display = 'none';
             }
         });
 
-        // --- 2. Enregistrement du Service Worker ---
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js').then(registration => {
-                    console.log('✅ ServiceWorker enregistré avec succès !', registration.scope);
-                }).catch(err => {
-                    console.error('❌ Erreur lors de l\'enregistrement du ServiceWorker :', err);
-                });
+                navigator.serviceWorker.register('sw.js').then(r => console.log('✅ SW OK')).catch(e => console.error('❌ SW Erreur', e));
             });
         }
 
@@ -587,9 +617,10 @@
         const nuggetPriceInput = document.getElementById('nuggetPrice');
         const resourceTableBody = document.getElementById('resourceTableBody');
         const addModal = document.getElementById('addModal');
+        const imageModal = document.getElementById('imageModal');
         const resourceForm = document.getElementById('resourceForm');
         
-        // Elements Filtres
+        // Filtres
         const filterName = document.getElementById('filterName');
         const filterType = document.getElementById('filterType');
         const filterRentable = document.getElementById('filterRentable');
@@ -598,59 +629,150 @@
         // --- Initialisation ---
         function loadData() {
             const savedPrice = localStorage.getItem('nuggetPrice');
-            if (savedPrice) {
-                nuggetPrice = parseFloat(savedPrice);
-                nuggetPriceInput.value = nuggetPrice;
-            }
-
+            if (savedPrice) { nuggetPrice = parseFloat(savedPrice); nuggetPriceInput.value = nuggetPrice; }
             const savedResources = localStorage.getItem('resources');
-            if (savedResources) {
-                resources = JSON.parse(savedResources);
-            }
+            if (savedResources) { resources = JSON.parse(savedResources); }
             updateTable();
         }
 
-        // --- Sauvegarde ---
-        function saveResources() {
-            localStorage.setItem('resources', JSON.stringify(resources));
+        function saveResources() { localStorage.setItem('resources', JSON.stringify(resources)); }
+
+        // --- Gestion des Modales ---
+        function openModal() { addModal.style.display = 'flex'; }
+        function closeModal() { addModal.style.display = 'none'; }
+        
+        function openImageModal() { imageModal.style.display = 'flex'; }
+        function closeImageModal() { imageModal.style.display = 'none'; }
+        
+        window.onclick = function(event) {
+            if (event.target == addModal) closeModal();
+            if (event.target == imageModal) closeImageModal();
+        }
+
+        // --- Traitement OCR (Image) ---
+        async function processImageSubmit(event) {
+            event.preventDefault();
+            const category = document.getElementById('imgResType').value;
+            const fileInput = document.getElementById('imageFileInput');
+            const file = fileInput.files[0];
+            if (!file) return;
+
+            // Fermer la modale et afficher l'overlay de chargement
+            closeImageModal();
+            const overlay = document.getElementById('ocrOverlay');
+            const statusText = document.getElementById('ocrStatus');
+            overlay.style.display = 'flex';
+            statusText.innerText = "Chargement de l'IA...";
+
+            try {
+                // Création du Worker Tesseract (Français)
+                const worker = await Tesseract.createWorker('fra', 1, {
+                    logger: m => {
+                        if(m.status === 'recognizing text') {
+                           statusText.innerText = `Analyse : ${Math.round(m.progress * 100)}%`;
+                        }
+                    }
+                });
+
+                // Extraction du texte
+                const ret = await worker.recognize(file);
+                const text = ret.data.text;
+                await worker.terminate();
+
+                // Analyser et enregistrer le texte
+                parseOCRText(text, category);
+
+            } catch (err) {
+                alert("Erreur lors de l'analyse de l'image. Assurez-vous d'avoir une connexion internet.");
+                console.error(err);
+            } finally {
+                overlay.style.display = 'none';
+                fileInput.value = ''; // Réinitialiser l'input file
+            }
+        }
+
+        // Fonction pour lire le texte extrait et trouver les doublons
+        function parseOCRText(text, category) {
+            const lines = text.split('\n');
+            let addedCount = 0;
+            let updatedCount = 0;
+
+            lines.forEach(line => {
+                line = line.trim();
+                if (!line) return;
+
+                let name = "";
+                let rate1 = NaN;
+
+                // On cherche une ligne du type "Nom de la ressource 0.25" ou "Nom 0,25"
+                // Match: [Tout le texte] suivi de [Espaces] suivi de [Chiffre avec virgule/point] à la fin de la ligne
+                let match = line.match(/^(.*?)\s+([0-9]+[.,]?[0-9]*)$/);
+                
+                if (match) {
+                    name = match[1].trim();
+                    rate1 = parseFloat(match[2].replace(',', '.'));
+                } else {
+                    // Si c'est à l'envers : "0.25 Nom de la ressource"
+                    match = line.match(/^([0-9]+[.,]?[0-9]*)\s+(.*?)$/);
+                    if (match) {
+                        rate1 = parseFloat(match[1].replace(',', '.'));
+                        name = match[2].trim();
+                    }
+                }
+
+                // Si on a bien trouvé un nom valide et un chiffre
+                if (name && !isNaN(rate1)) {
+                    let rate1000 = rate1 * 1000; // Conversion automatique Taux/1 en Taux/1000
+                    
+                    // GESTION DES DOUBLONS : On cherche si ce nom existe déjà (en ignorant les majuscules/minuscules)
+                    const existingIndex = resources.findIndex(r => r.name.toLowerCase() === name.toLowerCase());
+                    
+                    if (existingIndex !== -1) {
+                        // Mise à jour de l'existant
+                        resources[existingIndex].rate = rate1000;
+                        resources[existingIndex].type = category; // Met à jour la catégorie si changée
+                        updatedCount++;
+                    } else {
+                        // Création d'un nouveau
+                        resources.push({
+                            id: Date.now() + Math.random(), // + random pour éviter les conflits d'id si rapide
+                            type: category,
+                            name: name,
+                            rate: rate1000,
+                            isProfitable: false,
+                            lastVerifiedDate: null
+                        });
+                        addedCount++;
+                    }
+                }
+            });
+
+            if (addedCount > 0 || updatedCount > 0) {
+                saveResources();
+                updateTable();
+                alert(`Lecture terminée !\n\n✔️ ${addedCount} ressource(s) ajoutée(s)\n🔄 ${updatedCount} ressource(s) mise(s) à jour (doublons reconnus)`);
+            } else {
+                alert("L'IA n'a reconnu aucune donnée valide.\nL'image doit être nette et les lignes doivent ressembler à : 'Nom de ressource 0.25'");
+            }
         }
 
         // --- Exportation CSV ---
         function exportCSV() {
-            if (resources.length === 0) {
-                alert("Vous n'avez aucune ressource à exporter !");
-                return;
-            }
-
-            // Création de l'en-tête (exactement comme le fichier importé)
+            if (resources.length === 0) { alert("Aucune ressource à exporter !"); return; }
             let csvContent = "Rescources;Coef;Hdv\n";
-
             resources.forEach(res => {
-                // Remettre la virgule pour les nombres (au lieu du point JS)
                 let rateStr = res.rate.toString().replace('.', ',');
-                
-                // Mettre la première lettre de la catégorie en majuscule (conso -> Conso)
                 let typeStr = res.type.charAt(0).toUpperCase() + res.type.slice(1);
-                
-                // Sécurité : enlever les points-virgules dans les noms s'il y en a pour ne pas casser le fichier
                 let nameStr = res.name.replace(/;/g, ',');
-
-                // Ajout de la ligne
                 csvContent += `${nameStr};${rateStr};${typeStr}\n`;
             });
-
-            // Le "\uFEFF" au début permet de forcer Excel à lire les accents correctement (UTF-8 avec BOM)
             const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
-            
-            // Création d'un lien invisible pour forcer le téléchargement
             const link = document.createElement("a");
             link.setAttribute("href", url);
             link.setAttribute("download", "mes_ressources_rentabilite.csv");
             document.body.appendChild(link);
-            link.click(); // Simule le clic
-            
-            // Nettoyage
+            link.click();
             document.body.removeChild(link);
             URL.revokeObjectURL(url);
         }
@@ -659,68 +781,50 @@
         function importCSV(event) {
             const file = event.target.files[0];
             if (!file) return;
-
             const reader = new FileReader();
             reader.onload = function(e) {
                 const text = e.target.result;
                 const lines = text.split(/\r\n|\n/);
+                let addedCount = 0; let updatedCount = 0;
                 
-                let addedCount = 0;
-                
-                // On commence à 1 pour ignorer la première ligne d'en-tête
                 for (let i = 1; i < lines.length; i++) {
                     const line = lines[i].trim();
                     if (!line) continue;
-                    
                     const cols = line.split(';');
                     if (cols.length >= 3) {
                         let name = cols[0].trim();
-                        let rateStr = cols[1].trim().replace(',', '.');
-                        let rate = parseFloat(rateStr);
-                        
-                        // Nettoyage de la catégorie
+                        let rate = parseFloat(cols[1].trim().replace(',', '.'));
                         let typeRaw = cols[2].trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-                        
-                        let type = "resco"; 
-                        if (['conso', 'resco', 'equip', 'ame', 'crea'].includes(typeRaw)) {
-                            type = typeRaw;
-                        }
+                        let type = ['conso', 'resco', 'equip', 'ame', 'crea'].includes(typeRaw) ? typeRaw : "resco";
 
                         if (name && !isNaN(rate)) {
-                            resources.push({
-                                id: Date.now() + i,
-                                type: type,
-                                name: name,
-                                rate: rate,
-                                isProfitable: false,
-                                lastVerifiedDate: null
-                            });
-                            addedCount++;
+                            // GESTION DOUBLONS IMPORT CSV EGALEMENT
+                            const existingIndex = resources.findIndex(r => r.name.toLowerCase() === name.toLowerCase());
+                            if (existingIndex !== -1) {
+                                resources[existingIndex].rate = rate;
+                                resources[existingIndex].type = type;
+                                updatedCount++;
+                            } else {
+                                resources.push({
+                                    id: Date.now() + i,
+                                    type: type,
+                                    name: name,
+                                    rate: rate,
+                                    isProfitable: false,
+                                    lastVerifiedDate: null
+                                });
+                                addedCount++;
+                            }
                         }
                     }
                 }
-                
-                if (addedCount > 0) {
-                    saveResources();
-                    updateTable();
-                    alert(addedCount + " ressource(s) importée(s) avec succès !");
-                } else {
-                    alert("Aucune ressource valide trouvée dans le fichier CSV. Vérifie le format.");
-                }
-                
+                if (addedCount > 0 || updatedCount > 0) {
+                    saveResources(); updateTable();
+                    alert(`Import CSV terminé !\n✔️ ${addedCount} ajoutée(s)\n🔄 ${updatedCount} mise(s) à jour`);
+                } else { alert("Aucune ressource valide trouvée."); }
                 event.target.value = '';
             };
-            
-            // LECTURE SPÉCIALE EN ISO-8859-1
             reader.readAsText(file, 'ISO-8859-1');
-        }
-
-        // --- Gestion Modale ---
-        function openModal() { addModal.style.display = 'flex'; }
-        function closeModal() { addModal.style.display = 'none'; }
-        
-        window.onclick = function(event) {
-            if (event.target == addModal) closeModal();
         }
 
         // --- Événements Formulaires & Filtres ---
@@ -732,20 +836,28 @@
 
         resourceForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            const newRes = {
-                id: Date.now(),
-                type: document.getElementById('resType').value,
-                name: document.getElementById('resourceName').value,
-                rate: parseFloat(document.getElementById('resourceRate').value),
-                isProfitable: false,
-                lastVerifiedDate: null
-            };
-            resources.push(newRes);
-            saveResources();
+            const name = document.getElementById('resourceName').value;
+            const rate = parseFloat(document.getElementById('resourceRate').value);
+            const category = document.getElementById('resType').value;
             
-            resourceForm.reset();
-            closeModal();
-            updateTable();
+            // GESTION DOUBLON AJOUT MANUEL
+            const existingIndex = resources.findIndex(r => r.name.toLowerCase() === name.toLowerCase());
+            if (existingIndex !== -1) {
+                if(confirm("Cette ressource existe déjà ! Voulez-vous mettre à jour son taux ?")) {
+                    resources[existingIndex].rate = rate;
+                    resources[existingIndex].type = category;
+                } else { return; }
+            } else {
+                resources.push({
+                    id: Date.now(),
+                    type: category,
+                    name: name,
+                    rate: rate,
+                    isProfitable: false,
+                    lastVerifiedDate: null
+                });
+            }
+            saveResources(); resourceForm.reset(); closeModal(); updateTable();
         });
 
         [filterName, filterType, filterRentable, filterVerified].forEach(el => {
@@ -756,39 +868,29 @@
         // --- Actions sur le tableau ---
         function toggleProfitable(id) {
             const res = resources.find(r => r.id === id);
-            if (res) {
-                res.isProfitable = !res.isProfitable;
-                saveResources();
-                updateTable();
-            }
+            if (res) { res.isProfitable = !res.isProfitable; saveResources(); updateTable(); }
         }
 
         function toggleVerified(id) {
             const res = resources.find(r => r.id === id);
             if (res) {
                 if (!res.lastVerifiedDate) {
-                    const today = new Date();
-                    res.lastVerifiedDate = today.toLocaleDateString('fr-FR', {day: '2-digit', month: '2-digit', year: '2-digit'});
-                } else {
-                    res.lastVerifiedDate = null;
-                }
-                saveResources();
-                updateTable();
+                    res.lastVerifiedDate = new Date().toLocaleDateString('fr-FR', {day: '2-digit', month: '2-digit', year: '2-digit'});
+                } else { res.lastVerifiedDate = null; }
+                saveResources(); updateTable();
             }
         }
 
         function deleteResource(id) {
             if(confirm("Supprimer cette ressource ?")) {
                 resources = resources.filter(r => r.id !== id);
-                saveResources();
-                updateTable();
+                saveResources(); updateTable();
             }
         }
 
         // --- Affichage du Tableau ---
         function updateTable() {
             resourceTableBody.innerHTML = '';
-            
             const fName = filterName.value.toLowerCase();
             const fType = filterType.value;
             const fRentable = filterRentable.value;
@@ -800,12 +902,8 @@
 
                 const matchName = res.name.toLowerCase().includes(fName);
                 const matchType = fType === "" || res.type === fType;
-                const matchRentable = fRentable === "" || 
-                                     (fRentable === "yes" && res.isProfitable) || 
-                                     (fRentable === "no" && !res.isProfitable);
-                const matchVerified = fVerified === "" || 
-                                     (fVerified === "yes" && res.lastVerifiedDate) || 
-                                     (fVerified === "no" && !res.lastVerifiedDate);
+                const matchRentable = fRentable === "" || (fRentable === "yes" && res.isProfitable) || (fRentable === "no" && !res.isProfitable);
+                const matchVerified = fVerified === "" || (fVerified === "yes" && res.lastVerifiedDate) || (fVerified === "no" && !res.lastVerifiedDate);
 
                 return matchName && matchType && matchRentable && matchVerified;
             });
@@ -813,7 +911,6 @@
             filteredResources.forEach(res => {
                 const maxBuyPrice = (res.rate / 1000) * nuggetPrice;
                 const tr = document.createElement('tr');
-                
                 if (res.isProfitable) tr.classList.add('row-profitable');
 
                 tr.innerHTML = `
@@ -821,22 +918,15 @@
                     <td class="col-name"><strong>${res.name}</strong></td>
                     <td>${res.rate}</td>
                     <td class="prix-max">${maxBuyPrice.toFixed(0)}</td>
-                    <td>
-                        <input type="checkbox" onchange="toggleProfitable(${res.id})" ${res.isProfitable ? 'checked' : ''}>
-                    </td>
-                    <td>
-                        <input type="checkbox" onchange="toggleVerified(${res.id})" ${res.lastVerifiedDate ? 'checked' : ''}>
-                    </td>
+                    <td><input type="checkbox" onchange="toggleProfitable(${res.id})" ${res.isProfitable ? 'checked' : ''}></td>
+                    <td><input type="checkbox" onchange="toggleVerified(${res.id})" ${res.lastVerifiedDate ? 'checked' : ''}></td>
                     <td>${res.lastVerifiedDate ? res.lastVerifiedDate : '-'}</td>
-                    <td>
-                        <button class="btn-delete" title="Supprimer" onclick="deleteResource(${res.id})">🗑️</button>
-                    </td>
+                    <td><button class="btn-delete" title="Supprimer" onclick="deleteResource(${res.id})">🗑️</button></td>
                 `;
                 resourceTableBody.appendChild(tr);
             });
         }
 
-        // Démarrage
         loadData();
     </script>
 </body>
