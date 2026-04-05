@@ -198,6 +198,22 @@
         .btn-green { background-color: var(--color-green); }
         .btn-green:hover { background-color: #34d399; box-shadow: 0 6px 12px rgba(16, 185, 129, 0.4); }
 
+        /* Action dans le tableau */
+        .btn-action {
+            background-color: transparent;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            padding: 4px;
+            transition: transform 0.2s;
+            box-shadow: none;
+        }
+        .btn-action:hover {
+            transform: scale(1.2);
+            background-color: transparent;
+            box-shadow: none;
+        }
+
         /* Layout header */
         .header-actions {
             display: flex;
@@ -281,6 +297,11 @@
             white-space: nowrap;
             width: 30px; /* Réduit drastiquement la largeur des colonnes */
             text-align: left;
+        }
+
+        .th-icon {
+            display: inline-block;
+            margin-bottom: 15px;
         }
 
         td {
@@ -482,6 +503,7 @@
                         <th><div class="th-angled">Date</div></th>
                         <th><div class="th-angled">Tx/1000</div></th>
                         <th><div class="th-angled">Catégorie</div></th>
+                        <th><div class="th-icon">⚙️</div></th>
                     </tr>
                 </thead>
                 <tbody id="resourceTableBody">
@@ -491,11 +513,11 @@
         </div>
     </div>
 
-    <!-- Modale Ajout Ressource Manuelle -->
+    <!-- Modale Ajout / Modification Ressource -->
     <div id="addModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Nouvelle Ressource</h2>
+                <h2 id="modalTitle">Nouvelle Ressource</h2>
                 <button class="close-btn" onclick="closeModal()">&times;</button>
             </div>
             <form id="resourceForm">
@@ -584,6 +606,7 @@
         // --- Variables Globales ---
         let nuggetPrice = 0;
         let resources = [];
+        let editingId = null; // Stocke l'ID de la ressource en cours de modification
 
         // Elements DOM
         const nuggetPriceInput = document.getElementById('nuggetPrice');
@@ -600,7 +623,6 @@
 
         // --- Copie dans le presse-papier ---
         function copyResourceName(element, id) {
-            // Retrouver le nom de la ressource via son ID (évite les bugs avec les apostrophes)
             const res = resources.find(r => r.id === id);
             if (!res) return;
 
@@ -611,13 +633,11 @@
             
             try {
                 document.execCommand("copy");
-                
-                // Feedback visuel temporaire très discret
                 const originalHTML = element.innerHTML;
                 element.innerHTML = `<strong style="color: var(--accent);">Copié ! ✓</strong>`;
                 setTimeout(() => {
                     element.innerHTML = originalHTML;
-                }, 800); // Reste affiché 0.8 seconde
+                }, 800); 
                 
             } catch (err) {
                 console.error("Erreur de copie", err);
@@ -638,8 +658,30 @@
         function saveResources() { localStorage.setItem('resources', JSON.stringify(resources)); }
 
         // --- Gestion des Modales ---
-        function openModal() { addModal.style.display = 'flex'; }
-        function closeModal() { addModal.style.display = 'none'; }
+        function openModal() { 
+            editingId = null; // On est en mode Création
+            document.getElementById('modalTitle').innerText = "Nouvelle Ressource";
+            resourceForm.reset();
+            addModal.style.display = 'flex'; 
+        }
+
+        function closeModal() { 
+            addModal.style.display = 'none'; 
+            editingId = null;
+        }
+
+        function editResource(id) {
+            const res = resources.find(r => r.id === id);
+            if (!res) return;
+            
+            editingId = id; // On passe en mode Modification
+            document.getElementById('modalTitle').innerText = "Modifier Ressource";
+            document.getElementById('resType').value = res.type;
+            document.getElementById('resourceName').value = res.name;
+            document.getElementById('resourceRate').value = res.rate;
+            
+            addModal.style.display = 'flex';
+        }
         
         function openImageModal() { imageModal.style.display = 'flex'; }
         function closeImageModal() { imageModal.style.display = 'none'; }
@@ -825,23 +867,44 @@
             const rate = parseFloat(document.getElementById('resourceRate').value);
             const category = document.getElementById('resType').value;
             
-            const existingIndex = resources.findIndex(r => r.name.toLowerCase() === name.toLowerCase());
-            if (existingIndex !== -1) {
-                if(confirm("Cette ressource existe déjà ! Mettre à jour son taux ?")) {
-                    resources[existingIndex].rate = rate;
-                    resources[existingIndex].type = category;
-                } else { return; }
+            if (editingId) {
+                // Mode Modification
+                const duplicateIndex = resources.findIndex(r => r.name.toLowerCase() === name.toLowerCase() && r.id !== editingId);
+                if (duplicateIndex !== -1) {
+                    alert("Ce nom est déjà utilisé par une autre ressource.");
+                    return;
+                }
+                
+                const resToUpdate = resources.find(r => r.id === editingId);
+                if (resToUpdate) {
+                    resToUpdate.name = name;
+                    resToUpdate.rate = rate;
+                    resToUpdate.type = category;
+                }
             } else {
-                resources.push({
-                    id: Date.now(),
-                    type: category,
-                    name: name,
-                    rate: rate,
-                    isProfitable: false,
-                    lastVerifiedDate: null
-                });
+                // Mode Ajout
+                const existingIndex = resources.findIndex(r => r.name.toLowerCase() === name.toLowerCase());
+                if (existingIndex !== -1) {
+                    if(confirm("Cette ressource existe déjà ! Mettre à jour son taux ?")) {
+                        resources[existingIndex].rate = rate;
+                        resources[existingIndex].type = category;
+                    } else { return; }
+                } else {
+                    resources.push({
+                        id: Date.now(),
+                        type: category,
+                        name: name,
+                        rate: rate,
+                        isProfitable: false,
+                        lastVerifiedDate: null
+                    });
+                }
             }
-            saveResources(); resourceForm.reset(); closeModal(); updateTable();
+            
+            saveResources(); 
+            resourceForm.reset(); 
+            closeModal(); 
+            updateTable();
         });
 
         [filterName, filterType, filterRentable, filterVerified].forEach(el => {
@@ -898,7 +961,7 @@
                 else if (res.type === 'ame') typeColor = "var(--color-purple)";
                 else if (res.type === 'crea') typeColor = "var(--color-pink)";
 
-                // Ligne de rendu propre avec les colonnes réorganisées
+                // Ligne de rendu propre avec les colonnes réorganisées et le bouton modifier
                 tr.innerHTML = `
                     <td class="col-name" title="Copier le nom" onclick="copyResourceName(this, ${res.id})"><strong>${res.name}</strong></td>
                     <td class="prix-max">${maxBuyPrice.toFixed(0)}</td>
@@ -907,6 +970,7 @@
                     <td>${res.lastVerifiedDate ? res.lastVerifiedDate : '-'}</td>
                     <td>${res.rate}</td>
                     <td class="col-type" style="color: ${typeColor};">${res.type}</td>
+                    <td><button class="btn-action" title="Modifier" onclick="editResource(${res.id})">✏️</button></td>
                 `;
                 resourceTableBody.appendChild(tr);
             });
