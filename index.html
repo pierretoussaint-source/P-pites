@@ -468,7 +468,6 @@
             <table>
                 <thead>
                     <tr>
-                        <th><div class="th-angled">Catégorie</div></th>
                         <!-- On donne un peu plus de place en largeur d'ancrage pour le nom -->
                         <th><div class="th-angled" style="width: 80px;">Nom</div></th>
                         <th><div class="th-angled">Tx/1000</div></th>
@@ -476,6 +475,7 @@
                         <th title="A été rentable"><div class="th-angled">Rentable</div></th>
                         <th title="Vérifiée"><div class="th-angled">Vérifié</div></th>
                         <th><div class="th-angled">Date</div></th>
+                        <th><div class="th-angled">Catégorie</div></th>
                     </tr>
                 </thead>
                 <tbody id="resourceTableBody">
@@ -864,15 +864,15 @@
                 else if (res.type === 'ame') typeColor = "var(--color-purple)";
                 else if (res.type === 'crea') typeColor = "var(--color-pink)";
 
-                // Ligne de rendu propre (POUBELLE TOTALEMENT SUPPRIMÉE)
+                // Ligne de rendu propre (Catégorie à la fin)
                 tr.innerHTML = `
-                    <td class="col-type" style="color: ${typeColor};">${res.type}</td>
                     <td class="col-name"><strong>${res.name}</strong></td>
                     <td>${res.rate}</td>
                     <td class="prix-max">${maxBuyPrice.toFixed(0)}</td>
                     <td><input type="checkbox" onchange="toggleProfitable(${res.id})" ${res.isProfitable ? 'checked' : ''}></td>
                     <td><input type="checkbox" onchange="toggleVerified(${res.id})" ${res.lastVerifiedDate ? 'checked' : ''}></td>
                     <td>${res.lastVerifiedDate ? res.lastVerifiedDate : '-'}</td>
+                    <td class="col-type" style="color: ${typeColor};">${res.type}</td>
                 `;
                 resourceTableBody.appendChild(tr);
             });
